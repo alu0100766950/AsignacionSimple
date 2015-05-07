@@ -3,6 +3,11 @@
 
 /* operator associations and precedence */
 
+%{
+    var symbolTable = {};
+%}
+
+%right '='
 %left '+' '-'
 %left '*' '/'
 %right '^'
@@ -15,13 +20,25 @@
 %% /* language grammar */
 
 expressions
-    : e EOF
-        { typeof console !== 'undefined' ? console.log($1) : print($1);
-          return $1; }
+    : s
+        { $$ = typeof $1 == 'undefined'? [] : [ $1 ]; }
+    | expressions ';' s
+        { 
+            $$ = $1;
+            if($3) $$.push($3);
+                console.log($$);
+        }
+    ;
+
+s
+    :/*empty*/    
+    | e
     ;
 
 e
-    : e '+' e
+    : ID '=' e
+        { symbolTable[$1] = $3; $$ = $3 }
+    | e '+' e
         {$$ = $1+$3;}
     | e '-' e
         {$$ = $1-$3;}
@@ -47,5 +64,6 @@ e
         {$$ = Math.E;}
     | PI
         {$$ = Math.PI;}
+    | ID
+        { $$ = symbolTable[$1]; }
     ;
-
